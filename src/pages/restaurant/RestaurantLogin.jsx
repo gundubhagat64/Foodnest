@@ -17,8 +17,6 @@ function RestaurantLogin() {
       return;
     }
 
-    // Temporary frontend login
-    // Supabase authentication will be added later.
     if (
       email === "restaurant@foodnest.com" &&
       password === "123456"
@@ -33,12 +31,10 @@ function RestaurantLogin() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#090807] px-5 py-10 text-[#f5f1e8]">
 
-      {/* Background glow */}
       <div className="pointer-events-none absolute left-[-120px] top-[-100px] h-80 w-80 rounded-full bg-[#e5a13a]/10 blur-[100px]" />
 
       <div className="pointer-events-none absolute bottom-[-120px] right-[-100px] h-80 w-80 rounded-full bg-[#e5a13a]/10 blur-[100px]" />
 
-      {/* Login card */}
       <div className="relative z-10 w-full max-w-md">
 
         <div className="rounded-[32px] border border-white/10 bg-[#11100f]/90 p-6 shadow-2xl shadow-black/40 backdrop-blur-2xl sm:p-8">
@@ -64,7 +60,7 @@ function RestaurantLogin() {
 
           </div>
 
-          {/* Form */}
+          {/* Login Form */}
           <form
             onSubmit={handleLogin}
             className="mt-8 space-y-5"
@@ -141,7 +137,7 @@ function RestaurantLogin() {
               </div>
             )}
 
-            {/* Login */}
+            {/* Login Button */}
             <button
               type="submit"
               className="w-full rounded-xl bg-[#e5a13a] py-3.5 text-xs font-black text-[#17120b] shadow-lg shadow-[#e5a13a]/20 transition hover:-translate-y-0.5 hover:bg-[#f0ad43]"
@@ -151,7 +147,7 @@ function RestaurantLogin() {
 
           </form>
 
-          {/* Temporary credentials */}
+          {/* Demo Credentials */}
           <div className="mt-6 rounded-xl border border-white/5 bg-white/[0.025] p-3.5 text-center">
 
             <p className="text-[9px] font-bold uppercase tracking-wider text-[#625d56]">
