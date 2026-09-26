@@ -17,6 +17,7 @@ import Register from "./pages/Register";
 
 import RestaurantLogin from "./pages/restaurant/RestaurantLogin";
 import RestaurantDashboard from "./pages/restaurant/RestaurantDashboard";
+import RestaurantMenu from "./pages/restaurant/RestaurantMenu";
 
 import { CartProvider } from "./context/CartContext";
 
@@ -48,6 +49,11 @@ function App() {
           <Route
             path="/restaurant/dashboard"
             element={<RestaurantDashboard />}
+          />
+
+          <Route
+            path="/restaurant/menu"
+            element={<RestaurantMenu />}
           />
         </Routes>
       </CartProvider>

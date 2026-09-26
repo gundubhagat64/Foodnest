@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../../lib/supabase";
 
 function RestaurantLogin() {
   const navigate = useNavigate();
@@ -8,24 +9,60 @@ function RestaurantLogin() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+
+    setError("");
 
     if (!email || !password) {
       setError("Please enter email and password.");
       return;
     }
 
-    if (
-      email === "restaurant@foodnest.com" &&
-      password === "123456"
-    ) {
-      localStorage.setItem("restaurantLoggedIn", "true");
-      navigate("/restaurant/dashboard");
-    } else {
-      setError("Invalid restaurant credentials.");
+    setLoading(true);
+
+    const { data, error: loginError } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+    if (loginError) {
+      setError(loginError.message);
+      setLoading(false);
+      return;
     }
+
+    if (!data.user) {
+      setError("Unable to login.");
+      setLoading(false);
+      return;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", data.user.id)
+      .single();
+
+    if (profileError) {
+      setError("Restaurant profile not found.");
+      await supabase.auth.signOut();
+      setLoading(false);
+      return;
+    }
+
+    if (profile.role !== "restaurant") {
+      setError("This account is not a restaurant account.");
+      await supabase.auth.signOut();
+      setLoading(false);
+      return;
+    }
+
+    setLoading(false);
+    navigate("/restaurant/dashboard");
   };
 
   return (
@@ -39,7 +76,6 @@ function RestaurantLogin() {
 
         <div className="rounded-[32px] border border-white/10 bg-[#11100f]/90 p-6 shadow-2xl shadow-black/40 backdrop-blur-2xl sm:p-8">
 
-          {/* Logo */}
           <div className="text-center">
 
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-[#e5a13a]/20 bg-[#e5a13a]/10 text-3xl shadow-lg shadow-[#e5a13a]/10">
@@ -60,52 +96,34 @@ function RestaurantLogin() {
 
           </div>
 
-          {/* Login Form */}
           <form
             onSubmit={handleLogin}
             className="mt-8 space-y-5"
           >
 
-            {/* Email */}
             <div>
-
               <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-[#8b847b]">
                 Restaurant Email
               </label>
 
-              <div className="relative">
-
-                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm">
-                  ✉️
-                </span>
-
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setError("");
-                  }}
-                  placeholder="restaurant@foodnest.com"
-                  className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.035] pl-11 pr-4 text-xs text-white outline-none transition placeholder:text-[#514d47] focus:border-[#e5a13a]/40 focus:bg-[#e5a13a]/5"
-                />
-
-              </div>
-
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError("");
+                }}
+                placeholder="restaurant@foodnest.com"
+                className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.035] px-4 text-xs text-white outline-none transition placeholder:text-[#514d47] focus:border-[#e5a13a]/40 focus:bg-[#e5a13a]/5"
+              />
             </div>
 
-            {/* Password */}
             <div>
-
               <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-[#8b847b]">
                 Password
               </label>
 
               <div className="relative">
-
-                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm">
-                  🔒
-                </span>
 
                 <input
                   type={showPassword ? "text" : "password"}
@@ -115,7 +133,7 @@ function RestaurantLogin() {
                     setError("");
                   }}
                   placeholder="Enter your password"
-                  className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.035] pl-11 pr-12 text-xs text-white outline-none transition placeholder:text-[#514d47] focus:border-[#e5a13a]/40 focus:bg-[#e5a13a]/5"
+                  className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.035] px-4 pr-12 text-xs text-white outline-none transition placeholder:text-[#514d47] focus:border-[#e5a13a]/40 focus:bg-[#e5a13a]/5"
                 />
 
                 <button
@@ -127,48 +145,28 @@ function RestaurantLogin() {
                 </button>
 
               </div>
-
             </div>
 
-            {/* Error */}
             {error && (
               <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-[10px] font-semibold text-red-400">
                 {error}
               </div>
             )}
 
-            {/* Login Button */}
             <button
               type="submit"
-              className="w-full rounded-xl bg-[#e5a13a] py-3.5 text-xs font-black text-[#17120b] shadow-lg shadow-[#e5a13a]/20 transition hover:-translate-y-0.5 hover:bg-[#f0ad43]"
+              disabled={loading}
+              className="w-full rounded-xl bg-[#e5a13a] py-3.5 text-xs font-black text-[#17120b] shadow-lg shadow-[#e5a13a]/20 transition hover:-translate-y-0.5 hover:bg-[#f0ad43] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Login to Dashboard →
+              {loading ? "Logging in..." : "Login to Dashboard →"}
             </button>
 
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 rounded-xl border border-white/5 bg-white/[0.025] p-3.5 text-center">
-
-            <p className="text-[9px] font-bold uppercase tracking-wider text-[#625d56]">
-              Demo Credentials
-            </p>
-
-            <p className="mt-2 text-[10px] text-[#817a71]">
-              restaurant@foodnest.com
-            </p>
-
-            <p className="mt-1 text-[10px] text-[#817a71]">
-              Password: 123456
-            </p>
-
-          </div>
-
-          {/* Back */}
           <button
             type="button"
             onClick={() => navigate("/")}
-            className="mt-5 w-full text-center text-[10px] font-bold text-[#625d56] transition hover:text-[#e5a13a]"
+            className="mt-6 w-full text-center text-[10px] font-bold text-[#625d56] transition hover:text-[#e5a13a]"
           >
             ← Back to FoodNest
           </button>
