@@ -1,16 +1,69 @@
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+
 import { useCart } from "../context/CartContext";
+import { supabase } from "../lib/supabase";
 
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
+
   const { cartCount } = useCart();
+
+  const [role, setRole] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const isActive = (path) => location.pathname === path;
 
+  useEffect(() => {
+    let mounted = true;
+
+    const loadUserRole = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        if (mounted) {
+          setRole(null);
+          setLoading(false);
+        }
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (mounted) {
+        setRole(profile?.role || null);
+        setLoading(false);
+      }
+    };
+
+    loadUserRole();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      loadUserRole();
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Don't show customer navbar to restaurant
+  if (loading || role !== "customer") {
+    return null;
+  }
+
   return (
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#11100f]/85 shadow-lg shadow-black/20 backdrop-blur-xl">
-
       <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 sm:px-8">
 
         {/* LOGO */}
@@ -85,7 +138,6 @@ function Navbar() {
           >
             Orders
           </button>
-
         </div>
 
         {/* ACTIONS */}
@@ -97,10 +149,7 @@ function Navbar() {
             onClick={() => navigate("/cart")}
             className="relative flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-3 text-[#aaa49b] transition hover:border-[#e5a13a]/30 hover:bg-[#e5a13a]/10 hover:text-white"
           >
-
-            <span className="text-lg">
-              🛒
-            </span>
+            <span className="text-lg">🛒</span>
 
             <span className="hidden text-xs font-semibold sm:block">
               Cart
@@ -111,7 +160,6 @@ function Navbar() {
                 {cartCount}
               </span>
             )}
-
           </button>
 
           {/* PROFILE */}
@@ -122,14 +170,11 @@ function Navbar() {
           >
             👤
           </button>
-
         </div>
-
       </div>
 
       {/* MOBILE NAV */}
       <div className="border-t border-white/5 bg-[#151412]/95 md:hidden">
-
         <div className="mx-auto flex max-w-md items-center justify-around px-2 py-2">
 
           <button
@@ -185,9 +230,7 @@ function Navbar() {
           </button>
 
         </div>
-
       </div>
-
     </nav>
   );
 }
