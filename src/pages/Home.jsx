@@ -1,29 +1,60 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import foodData from "../data/foodData";
 import heroImage from "../assets/foodnest-hero.png.png";
+import { supabase } from "../lib/supabase";
+
+const categories = [
+  { name: "Biryani", icon: "🍛" },
+  { name: "Pizza", icon: "🍕" },
+  { name: "Burger", icon: "🍔" },
+  { name: "Chinese", icon: "🍜" },
+  { name: "Starters", icon: "🥘" },
+  { name: "Desserts", icon: "🍰" },
+];
 
 function Home() {
   const navigate = useNavigate();
   const { addToCart } = useCart();
 
-  const popularFoods = foodData.slice(0, 4);
+  const [foods, setFoods] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const categories = [
-    { name: "Biryani", icon: "🍛" },
-    { name: "Pizza", icon: "🍕" },
-    { name: "Burger", icon: "🍔" },
-    { name: "Chinese", icon: "🍜" },
-    { name: "Starters", icon: "🥘" },
-    { name: "Desserts", icon: "🍰" },
-  ];
+  const fetchFoods = async () => {
+    setLoading(true);
+    setError("");
+
+    const { data, error: fetchError } = await supabase
+      .from("foods")
+      .select("*")
+      .eq("available", true)
+      .limit(4);
+
+    if (fetchError) {
+      setError(fetchError.message);
+      setFoods([]);
+    } else {
+      setFoods(data || []);
+    }
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchFoods();
+  }, []);
+
+  const popularFoods = foods;
+
+  const featuredFood = popularFoods[0];
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#090807] text-[#f5f1e8]">
 
       {/* Background Image */}
       <div
-        className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center opacity-35 blur-[3px] scale-105"
+        className="pointer-events-none fixed inset-0 z-0 scale-105 bg-cover bg-center opacity-35 blur-[3px]"
         style={{
           backgroundImage: `url(${heroImage})`,
         }}
@@ -37,15 +68,13 @@ function Home() {
       {/* Orange glow */}
       <div className="pointer-events-none fixed right-[-180px] top-[15%] z-0 h-[500px] w-[500px] rounded-full bg-[#e59a32]/10 blur-[130px]" />
 
-      {/* Main content */}
       <div className="relative z-10">
 
         {/* HERO */}
         <section className="mx-auto max-w-7xl px-5 pb-14 pt-10 sm:px-8 sm:pb-20 sm:pt-16 lg:px-10 lg:pt-20">
-
           <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
 
-            {/* Left */}
+            {/* LEFT */}
             <div className="max-w-2xl">
 
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#e5a13a]/20 bg-[#e5a13a]/10 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[1.5px] text-[#f0ad43] backdrop-blur-md sm:text-xs">
@@ -65,7 +94,7 @@ function Home() {
                 experience.
               </p>
 
-              {/* Buttons */}
+              {/* BUTTONS */}
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
 
                 <button
@@ -86,7 +115,7 @@ function Home() {
 
               </div>
 
-              {/* Stats */}
+              {/* STATS */}
               <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4 border-t border-white/10 pt-6">
 
                 <div>
@@ -118,7 +147,7 @@ function Home() {
 
             </div>
 
-            {/* Right food visual */}
+            {/* RIGHT FOOD VISUAL */}
             <div className="relative mx-auto w-full max-w-md lg:max-w-lg">
 
               <div className="absolute inset-8 rounded-full bg-[#e5a13a]/10 blur-[70px]" />
@@ -132,19 +161,28 @@ function Home() {
                   }}
                 />
 
-                {/* Floating card */}
+                {/* Floating Card */}
                 <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between rounded-2xl border border-white/10 bg-[#11100f]/85 px-4 py-3 backdrop-blur-xl">
 
                   <div className="flex items-center gap-3">
 
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e5a13a]/15 text-xl">
-                      🍛
+                    <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-[#e5a13a]/15 text-xl">
+                      {featuredFood?.image_url ? (
+                        <img
+                          src={featuredFood.image_url}
+                          alt={featuredFood.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        "🍛"
+                      )}
                     </div>
 
                     <div>
                       <p className="text-xs font-black text-white">
-                        Chef's Special
+                        {featuredFood?.name || "Chef's Special"}
                       </p>
+
                       <p className="mt-0.5 text-[10px] text-[#827b72]">
                         Freshly prepared
                       </p>
@@ -284,68 +322,140 @@ function Home() {
 
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* LOADING */}
+          {loading && (
+            <div className="rounded-3xl border border-white/10 bg-[#11100f]/75 px-6 py-16 text-center backdrop-blur-xl">
+              <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-[#e5a13a]" />
 
-            {popularFoods.map((food) => (
-              <div
-                key={food.id}
-                className="group overflow-hidden rounded-3xl border border-white/10 bg-[#11100f]/75 backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-[#e5a13a]/25 hover:shadow-xl hover:shadow-black/30"
+              <p className="mt-5 text-sm text-[#aaa39a]">
+                Loading popular food...
+              </p>
+            </div>
+          )}
+
+          {/* ERROR */}
+          {!loading && error && (
+            <div className="rounded-3xl border border-red-500/20 bg-red-500/10 px-6 py-12 text-center">
+
+              <div className="text-5xl">
+                ⚠️
+              </div>
+
+              <h3 className="mt-4 text-lg font-bold text-red-400">
+                Unable to load food
+              </h3>
+
+              <p className="mx-auto mt-2 max-w-xl text-xs text-red-300/70">
+                {error}
+              </p>
+
+              <button
+                type="button"
+                onClick={fetchFoods}
+                className="mt-5 rounded-xl bg-[#e5a13a] px-5 py-3 text-xs font-bold text-[#17120b]"
               >
+                Try Again
+              </button>
 
-                {/* Food image */}
-                <div className="relative flex h-40 items-center justify-center overflow-hidden bg-gradient-to-br from-[#25201a] to-[#100e0c] sm:h-44">
+            </div>
+          )}
 
-                  <div className="absolute inset-0 bg-[#e5a13a]/5 opacity-0 transition group-hover:opacity-100" />
+          {/* FOOD GRID */}
+          {!loading && !error && popularFoods.length > 0 && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-                  <span className="relative text-7xl transition duration-300 group-hover:scale-110">
-                    {food.image}
-                  </span>
+              {popularFoods.map((food) => (
+                <div
+                  key={food.id}
+                  className="group overflow-hidden rounded-3xl border border-white/10 bg-[#11100f]/75 backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-[#e5a13a]/25 hover:shadow-xl hover:shadow-black/30"
+                >
 
-                  <span className="absolute left-3 top-3 rounded-lg bg-[#11100f]/80 px-2 py-1 text-[9px] font-bold text-[#f0ad43] backdrop-blur-md">
-                    ★ {food.rating}
-                  </span>
+                  {/* IMAGE */}
+                  <div className="relative flex h-40 items-center justify-center overflow-hidden bg-gradient-to-br from-[#25201a] to-[#100e0c] sm:h-44">
 
-                </div>
+                    <div className="absolute inset-0 bg-[#e5a13a]/5 opacity-0 transition group-hover:opacity-100" />
 
-                {/* Details */}
-                <div className="p-4">
-
-                  <div className="flex items-start justify-between gap-2">
-
-                    <div>
-                      <h3 className="text-sm font-black text-white">
-                        {food.name}
-                      </h3>
-
-                      <p className="mt-1 text-[10px] text-[#746e65]">
-                        {food.category} • {food.time}
-                      </p>
-                    </div>
-
-                    <span className="whitespace-nowrap text-sm font-black text-[#f0ad43]">
-                      ₹{food.price}
-                    </span>
+                    {food.image_url ? (
+                      <img
+                        src={food.image_url}
+                        alt={food.name}
+                        className="relative z-10 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <span className="relative text-7xl transition duration-300 group-hover:scale-110">
+                        🍽️
+                      </span>
+                    )}
 
                   </div>
 
-                  <p className="mt-2 line-clamp-2 text-[10px] leading-4 text-[#858077]">
-                    {food.description}
-                  </p>
+                  {/* DETAILS */}
+                  <div className="p-4">
 
-                  <button
-                    type="button"
-                    onClick={() => addToCart(food)}
-                    className="mt-4 w-full rounded-xl border border-[#e5a13a]/20 bg-[#e5a13a]/10 py-2.5 text-[10px] font-black text-[#f0ad43] transition hover:bg-[#e5a13a] hover:text-[#17120b]"
-                  >
-                    + Add to Cart
-                  </button>
+                    <div className="flex items-start justify-between gap-2">
+
+                      <div>
+                        <h3 className="text-sm font-black text-white">
+                          {food.name}
+                        </h3>
+
+                        <p className="mt-1 text-[10px] text-[#746e65]">
+                          {food.category}
+                        </p>
+                      </div>
+
+                      <span className="whitespace-nowrap text-sm font-black text-[#f0ad43]">
+                        ₹{food.price}
+                      </span>
+
+                    </div>
+
+                    <p className="mt-2 line-clamp-2 text-[10px] leading-4 text-[#858077]">
+                      {food.description}
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={() => addToCart(food)}
+                      className="mt-4 w-full rounded-xl border border-[#e5a13a]/20 bg-[#e5a13a]/10 py-2.5 text-[10px] font-black text-[#f0ad43] transition hover:bg-[#e5a13a] hover:text-[#17120b]"
+                    >
+                      + Add to Cart
+                    </button>
+
+                  </div>
 
                 </div>
+              ))}
 
+            </div>
+          )}
+
+          {/* EMPTY */}
+          {!loading && !error && popularFoods.length === 0 && (
+            <div className="rounded-3xl border border-white/10 bg-[#11100f]/75 px-6 py-16 text-center">
+
+              <div className="text-6xl">
+                🍽️
               </div>
-            ))}
 
-          </div>
+              <h3 className="mt-5 text-xl font-bold text-white">
+                No food available
+              </h3>
+
+              <p className="mt-2 text-sm text-[#77726a]">
+                Restaurant has not added any available food yet.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => navigate("/menu")}
+                className="mt-5 rounded-xl bg-[#e5a13a] px-5 py-3 text-xs font-bold text-[#17120b]"
+              >
+                Open Menu
+              </button>
+
+            </div>
+          )}
 
         </section>
 

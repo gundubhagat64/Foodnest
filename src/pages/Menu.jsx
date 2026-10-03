@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import heroImage from "../assets/foodnest-hero.png.png";
 import { supabase } from "../lib/supabase";
@@ -14,6 +15,8 @@ const categories = [
 ];
 
 function Menu() {
+  const navigate = useNavigate();
+
   const [foods, setFoods] = useState([]);
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
@@ -255,13 +258,13 @@ function Menu() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
             {filteredFoods.map((food) => {
-
               const quantity = getQuantity(food.id);
 
               return (
                 <div
                   key={food.id}
-                  className="group overflow-hidden rounded-2xl border border-white/10 bg-[#191817] shadow-xl shadow-black/30 transition duration-300 hover:-translate-y-2 hover:border-[#e5a13a]/25"
+                  onClick={() => navigate(`/food/${food.id}`)}
+                  className="group cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-[#191817] shadow-xl shadow-black/30 transition duration-300 hover:-translate-y-2 hover:border-[#e5a13a]/25"
                 >
 
                   {/* FOOD IMAGE */}
@@ -284,6 +287,9 @@ function Menu() {
                     {/* HEART */}
                     <button
                       type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
                       className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/40 text-xl text-white backdrop-blur-md transition hover:border-[#e5a13a]/50 hover:text-[#f0b04a]"
                     >
                       ♡
@@ -321,7 +327,10 @@ function Menu() {
 
                       <button
                         type="button"
-                        onClick={() => addToCart(food)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToCart(food);
+                        }}
                         className={
                           quantity > 0
                             ? "rounded-xl border border-[#e5a13a]/40 bg-[#e5a13a]/10 px-5 py-3 text-xs font-bold text-[#f0b34e]"
@@ -375,7 +384,6 @@ function Menu() {
         )}
 
       </main>
-
     </div>
   );
 }
