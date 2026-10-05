@@ -42,26 +42,16 @@ function ProtectedRoute({ children }) {
         data: { session },
       } = await supabase.auth.getSession();
 
-      if (mounted) {
-        setSession(session);
-        setLoading(false);
-      }
+      if (!mounted) return;
+
+      setSession(session);
+      setLoading(false);
     };
 
     checkSession();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (mounted) {
-        setSession(session);
-        setLoading(false);
-      }
-    });
-
     return () => {
       mounted = false;
-      subscription.unsubscribe();
     };
   }, []);
 
@@ -70,7 +60,6 @@ function ProtectedRoute({ children }) {
       <div className="flex min-h-screen items-center justify-center bg-[#090807] text-white">
         <div className="text-center">
           <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-[#e5a13a]/20 border-t-[#e5a13a]" />
-
           <p className="text-sm text-[#aaa39a]">
             Loading FoodNest...
           </p>
@@ -81,62 +70,6 @@ function ProtectedRoute({ children }) {
 
   if (!session) {
     return <Navigate to="/login" replace />;
-  }
-
-  return children;
-}
-
-function PublicAuthRoute({ children }) {
-  const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (mounted) {
-        setSession(session);
-        setLoading(false);
-      }
-    };
-
-    checkSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (mounted) {
-        setSession(session);
-        setLoading(false);
-      }
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#090807] text-white">
-        <div className="text-center">
-          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-[#e5a13a]/20 border-t-[#e5a13a]" />
-
-          <p className="text-sm text-[#aaa39a]">
-            Loading FoodNest...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (session) {
-    return <Navigate to="/" replace />;
   }
 
   return children;
@@ -160,25 +93,11 @@ function AppContent() {
       {showCustomerNavbar && <Navbar />}
 
       <Routes>
-        {/* CUSTOMER AUTH */}
+        {/* AUTH */}
 
-        <Route
-          path="/login"
-          element={
-            <PublicAuthRoute>
-              <Login />
-            </PublicAuthRoute>
-          }
-        />
+        <Route path="/login" element={<Login />} />
 
-        <Route
-          path="/register"
-          element={
-            <PublicAuthRoute>
-              <Register />
-            </PublicAuthRoute>
-          }
-        />
+        <Route path="/register" element={<Register />} />
 
         {/* CUSTOMER */}
 
@@ -199,8 +118,6 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-
-        {/* FOOD DETAILS */}
 
         <Route
           path="/food/:id"
@@ -291,7 +208,7 @@ function AppContent() {
           element={<RestaurantMenu />}
         />
 
-        {/* UNKNOWN URL */}
+        {/* UNKNOWN */}
 
         <Route
           path="*"

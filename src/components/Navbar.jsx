@@ -1,8 +1,5 @@
-import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-
 import { useCart } from "../context/CartContext";
-import { supabase } from "../lib/supabase";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -10,57 +7,7 @@ function Navbar() {
 
   const { cartCount } = useCart();
 
-  const [role, setRole] = useState(null);
-  const [loading, setLoading] = useState(true);
-
   const isActive = (path) => location.pathname === path;
-
-  useEffect(() => {
-    let mounted = true;
-
-    const loadUserRole = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        if (mounted) {
-          setRole(null);
-          setLoading(false);
-        }
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-
-      if (mounted) {
-        setRole(profile?.role || null);
-        setLoading(false);
-      }
-    };
-
-    loadUserRole();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      loadUserRole();
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  // Don't show customer navbar to restaurant
-  if (loading || role !== "customer") {
-    return null;
-  }
 
   return (
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#11100f]/85 shadow-lg shadow-black/20 backdrop-blur-xl">

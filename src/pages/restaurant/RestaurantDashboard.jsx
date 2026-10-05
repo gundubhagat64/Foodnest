@@ -35,6 +35,7 @@ function RestaurantDashboard() {
   return (
     <div className="min-h-screen bg-[#090807] text-white">
 
+      {/* HEADER */}
       <header className="border-b border-white/10 bg-[#11100f]">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
 
@@ -49,6 +50,7 @@ function RestaurantDashboard() {
           </div>
 
           <button
+            type="button"
             onClick={handleLogout}
             className="rounded-xl border border-white/10 px-4 py-2 text-xs font-bold text-[#aaa39a] transition hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
           >
@@ -58,10 +60,11 @@ function RestaurantDashboard() {
         </div>
       </header>
 
+      {/* MAIN */}
       <main className="mx-auto max-w-7xl px-5 py-8">
 
+        {/* WELCOME */}
         <div className="mb-8">
-
           <p className="text-xs text-[#777067]">
             Welcome back 👋
           </p>
@@ -73,9 +76,9 @@ function RestaurantDashboard() {
           <p className="mt-2 text-xs text-[#625d56]">
             Manage your restaurant, menu and orders from one place.
           </p>
-
         </div>
 
+        {/* STATS */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
 
           {stats.map((stat) => (
@@ -83,7 +86,6 @@ function RestaurantDashboard() {
               key={stat.title}
               className="rounded-2xl border border-white/10 bg-[#11100f] p-5"
             >
-
               <div className="flex items-center justify-between">
 
                 <span className="text-2xl">
@@ -101,12 +103,12 @@ function RestaurantDashboard() {
               <p className="mt-1 text-2xl font-black text-white">
                 {stat.value}
               </p>
-
             </div>
           ))}
 
         </div>
 
+        {/* QUICK ACTIONS */}
         <section className="mt-8">
 
           <h2 className="mb-4 text-lg font-black">
@@ -116,6 +118,7 @@ function RestaurantDashboard() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
             <button
+              type="button"
               onClick={() => navigate("/restaurant/menu")}
               className="rounded-2xl border border-[#e5a13a]/20 bg-[#e5a13a]/10 p-5 text-left transition hover:-translate-y-1 hover:bg-[#e5a13a]/15"
             >
@@ -131,6 +134,7 @@ function RestaurantDashboard() {
             </button>
 
             <button
+              type="button"
               className="rounded-2xl border border-white/10 bg-[#11100f] p-5 text-left transition hover:-translate-y-1 hover:bg-white/[0.04]"
             >
               <div className="text-2xl">📦</div>
@@ -145,6 +149,7 @@ function RestaurantDashboard() {
             </button>
 
             <button
+              type="button"
               className="rounded-2xl border border-white/10 bg-[#11100f] p-5 text-left transition hover:-translate-y-1 hover:bg-white/[0.04]"
             >
               <div className="text-2xl">👨‍🍳</div>
@@ -159,6 +164,7 @@ function RestaurantDashboard() {
             </button>
 
             <button
+              type="button"
               className="rounded-2xl border border-white/10 bg-[#11100f] p-5 text-left transition hover:-translate-y-1 hover:bg-white/[0.04]"
             >
               <div className="text-2xl">📊</div>
@@ -173,9 +179,9 @@ function RestaurantDashboard() {
             </button>
 
           </div>
-
         </section>
 
+        {/* RECENT ORDERS */}
         <section className="mt-8 rounded-2xl border border-white/10 bg-[#11100f] p-6">
 
           <div className="flex items-center justify-between">
@@ -238,7 +244,6 @@ function RestaurantDashboard() {
         </section>
 
       </main>
-
     </div>
   );
 }
