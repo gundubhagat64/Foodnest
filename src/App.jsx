@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import {
   BrowserRouter,
@@ -8,6 +9,7 @@ import {
 } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 import Home from "./pages/Home";
 import Menu from "./pages/Menu";
@@ -94,13 +96,10 @@ function AppContent() {
 
       <Routes>
         {/* AUTH */}
-
         <Route path="/login" element={<Login />} />
-
         <Route path="/register" element={<Register />} />
 
         {/* CUSTOMER */}
-
         <Route
           path="/"
           element={
@@ -192,7 +191,6 @@ function AppContent() {
         />
 
         {/* RESTAURANT */}
-
         <Route
           path="/restaurant/login"
           element={<RestaurantLogin />}
@@ -208,13 +206,14 @@ function AppContent() {
           element={<RestaurantMenu />}
         />
 
-        {/* UNKNOWN */}
-
+        {/* UNKNOWN PAGE */}
         <Route
           path="*"
           element={<Navigate to="/login" replace />}
         />
       </Routes>
+
+      {showCustomerNavbar && <Footer />}
     </>
   );
 }
